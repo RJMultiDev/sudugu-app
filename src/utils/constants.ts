@@ -1,21 +1,3 @@
-// Server API base URL - change this to your server's address
-// For web: use localhost; for physical device: use your machine's LAN IP
-import { Platform } from 'react-native';
-
-function getBaseUrl(): string {
-  // On web, always use localhost
-  if (typeof window !== 'undefined') {
-    return 'http://localhost:3001/api';
-  }
-  // On Android emulator, use 10.0.2.2; on iOS simulator, use localhost
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:3001/api';
-  }
-  return 'http://localhost:3001/api';
-}
-
-export const API_BASE_URL = getBaseUrl();
-
 export const CATEGORIES = [
   { slug: 'dushi', name: '都市', icon: '🏙️' },
   { slug: 'xuanhuan', name: '玄幻', icon: '🐉' },

@@ -81,6 +81,7 @@ export interface ReadProgress {
   chapterTitle: string;
   bookTitle: string;
   timestamp: number;
+  scrollY?: number;
 }
 
 // ---- Theme ----

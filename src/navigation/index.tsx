@@ -26,12 +26,10 @@ export type RootStackParamList = {
     bookId: string;
     bookTitle: string;
     chapterId: number;   // index in chapters array
-    chapters: { id: string; title: string }[];
   };
   ChapterList: {
     bookId: string;
     bookTitle: string;
-    chapters: { id: string; title: string }[];
   };
   Ranking: undefined;
   CategoryDetail: { slug: string; name: string };

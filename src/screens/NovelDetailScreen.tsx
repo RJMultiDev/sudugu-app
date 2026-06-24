@@ -7,6 +7,7 @@ import { useBookshelf } from '../context/BookshelfContext';
 import { LoadingIndicator, ErrorView } from '../components/LoadingIndicator';
 import { api } from '../services/api';
 import { getReadProgress } from '../services/storage';
+import { setChapters } from '../services/chaptersCache';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { Novel, ReadProgress } from '../types';
@@ -58,15 +59,18 @@ export function NovelDetailScreen({ navigation, route }: Props) {
   };
 
   const startReading = (targetChapterId?: string) => {
-    if (!novel?.chapters?.length) return;
-    // targetChapterId is the chapter's original ID from the novel data
+    if (!novel?.chapters?.length) {
+      console.log('[startReading] no chapters', { novel: !!novel, len: novel?.chapters?.length });
+      return;
+    }
+    setChapters(id, novel.chapters);
     const resolvedId = targetChapterId || readProgress?.chapterId || novel.chapters[0].id;
     const idx = novel.chapters.findIndex((c) => c.id === resolvedId);
+    console.log('[startReading]', { bookId: id, chapterId: idx, total: novel.chapters.length });
     navigation.navigate('Reader', {
       bookId: id,
       bookTitle: novel.title,
       chapterId: idx >= 0 ? idx : 0,
-      chapters: novel.chapters,
     });
   };
 
@@ -139,7 +143,7 @@ export function NovelDetailScreen({ navigation, route }: Props) {
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>目录 ({novel.chapters.length}章)</Text>
             <TouchableOpacity onPress={() => navigation.navigate('ChapterList', {
-              bookId: id, bookTitle: novel.title, chapters: novel.chapters,
+              bookId: id, bookTitle: novel.title,
             })}>
               <Text style={{ color: colors.primary, fontSize: 13 }}>全部章节{'>'}</Text>
             </TouchableOpacity>

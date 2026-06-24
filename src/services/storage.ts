@@ -45,14 +45,18 @@ export async function saveReadProgress(
   bookId: string,
   chapterId: string,
   chapterTitle: string,
-  bookTitle: string
+  bookTitle: string,
+  scrollY?: number
 ): Promise<void> {
+  // 读取旧 progress 保留 scrollY
+  const existing = await getReadProgress(bookId);
   const progress: ReadProgress = {
     bookId,
     chapterId,
     chapterTitle,
     bookTitle,
     timestamp: Date.now(),
+    scrollY: scrollY ?? existing?.scrollY ?? 0,
   };
   await AsyncStorage.setItem(
     `${KEYS.READING_PROGRESS}_${bookId}`,

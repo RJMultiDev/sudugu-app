@@ -7,6 +7,7 @@ import { getReadProgress } from '../services/storage';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { ReadProgress } from '../types';
+import { getChapters } from '../services/chaptersCache';
 
 interface Props {
   navigation: NativeStackNavigationProp<any>;
@@ -14,13 +15,13 @@ interface Props {
     params: {
       bookId: string;
       bookTitle: string;
-      chapters: { id: string; title: string }[];
     };
   }, 'params'>;
 }
 
 export function ChapterListScreen({ navigation, route }: Props) {
-  const { bookId, bookTitle, chapters } = route.params;
+  const { bookId, bookTitle } = route.params;
+  const chapters = getChapters(bookId);
   const { colors } = useTheme();
   const [currentChapterId, setCurrentChapterId] = useState<string | null>(null);
 
@@ -36,7 +37,6 @@ export function ChapterListScreen({ navigation, route }: Props) {
       bookId,
       bookTitle,
       chapterId: idx >= 0 ? idx : 0,
-      chapters,
     });
   };
 
@@ -69,7 +69,11 @@ export function ChapterListScreen({ navigation, route }: Props) {
             </TouchableOpacity>
           );
         }}
-        initialScrollIndex = {chapters.findIndex((c) => c.id === currentChapterId)}
+        ListHeaderComponent={null}
+        initialScrollIndex = {(() => {
+          const idx = chapters.findIndex((c) => c.id === currentChapterId);
+          return idx >= 0 ? idx : undefined;
+        })()}
         getItemLayout={(_, index) => ({
           length: 44,
           offset: 44 * index,

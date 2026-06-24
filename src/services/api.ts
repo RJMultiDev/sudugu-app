@@ -1,4 +1,15 @@
-import { API_BASE_URL } from '../utils/constants';
+import {
+  scrapeHome,
+  scrapeCategories,
+  scrapeCategory,
+  scrapeRanking,
+  scrapeCompleted,
+  scrapeLatest,
+  scrapeSearch,
+  scrapeNovelDetail,
+  scrapeChapter,
+  scrapeAuthorNovels,
+} from './scraper';
 import type {
   HomeData,
   Category,
@@ -9,56 +20,44 @@ import type {
   ChapterContent,
 } from '../types';
 
-async function fetchJSON<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-  return response.json();
-}
-
 export const api = {
   getHome(): Promise<HomeData> {
-    return fetchJSON<HomeData>(`${API_BASE_URL}/home`);
+    return scrapeHome();
   },
 
   getCategories(): Promise<Category[]> {
-    return fetchJSON<Category[]>(`${API_BASE_URL}/categories`);
+    return scrapeCategories();
   },
 
   getCategory(slug: string, page: number = 1): Promise<CategoryDetail> {
-    return fetchJSON<CategoryDetail>(`${API_BASE_URL}/category/${slug}?page=${page}`);
+    return scrapeCategory(slug, page) as Promise<CategoryDetail>;
   },
 
   getRanking(page: number = 1): Promise<PaginatedResponse<HomeItem>> {
-    return fetchJSON<PaginatedResponse<HomeItem>>(`${API_BASE_URL}/ranking?page=${page}`);
+    return scrapeRanking(page);
   },
 
   getCompleted(page: number = 1): Promise<CategoryDetail> {
-    return fetchJSON<CategoryDetail>(`${API_BASE_URL}/completed?page=${page}`);
+    return scrapeCompleted(page) as Promise<CategoryDetail>;
   },
 
   getLatest(page: number = 1): Promise<PaginatedResponse<HomeItem>> {
-    return fetchJSON<PaginatedResponse<HomeItem>>(`${API_BASE_URL}/latest?page=${page}`);
+    return scrapeLatest(page);
   },
 
   search(keyword: string): Promise<{ novels: Novel[]; keyword: string }> {
-    return fetchJSON<{ novels: Novel[]; keyword: string }>(
-      `${API_BASE_URL}/search?keyword=${encodeURIComponent(keyword)}`
-    );
+    return scrapeSearch(keyword);
   },
 
   getNovelDetail(id: string): Promise<Novel & { chapters: { id: string; title: string }[] }> {
-    return fetchJSON(`${API_BASE_URL}/novel/${id}`);
+    return scrapeNovelDetail(id) as Promise<Novel & { chapters: { id: string; title: string }[] }>;
   },
 
   getChapter(bookId: string, chapterId: string): Promise<ChapterContent> {
-    return fetchJSON<ChapterContent>(`${API_BASE_URL}/chapter/${bookId}/${chapterId}`);
+    return scrapeChapter(bookId, chapterId);
   },
 
   getAuthorNovels(tag: string): Promise<{ novels: Novel[]; author: string }> {
-    return fetchJSON<{ novels: Novel[]; author: string }>(
-      `${API_BASE_URL}/author?tag=${encodeURIComponent(tag)}`
-    );
+    return scrapeAuthorNovels(tag);
   },
 };
