@@ -1,41 +1,48 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
-# dependencies
-node_modules/
-
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-
-# Native
+# Kotlin
 .kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+local.properties
 
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
 .DS_Store
-*.pem
+xcuserdata/
 
-# local env files
-.env*.local
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.externalNativeBuild
+.cxx
+local.properties
 
-# typescript
-*.tsbuildinfo
+# iOS
+iosApp/Pods/
+iosApp/Podfile.lock
+iosApp/Flutter/
+*.xcworkspace
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
 
-# generated native folders
-/ios
-/android
+# Kotlin/Native
+*.kexe
+*.klib
+
+# Logs
+*.log
+hs_err_pid*
+
+# Legacy RN scaffold
+.legacy-rn/
+.mavis/

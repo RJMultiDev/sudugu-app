@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#E74347">
+    <title>速读谷</title>
+    <link type="text/css" rel="stylesheet" href="styles.css">
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+        #sudugu-canvas { width: 100vw; height: 100vh; display: block; }
+        #loading {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: #E74347; color: #FFFFFF;
+            font-size: 18px;
+        }
+        #loading.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="sudugu-canvas"></canvas>
+    <div id="loading">速读谷 · 加载中...</div>
+    <script src="skiko.js"></script>
+    <script src="composeApp.js"></script>
+    <script>
+        // Hide the loading splash once Compose has rendered its first frame.
+        const observer = new MutationObserver(() => {
+            const c = document.getElementById('sudugu-canvas');
+            if (c && c.firstChild) document.getElementById('loading').classList.add('hidden');
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>
