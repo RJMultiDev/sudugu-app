@@ -105,7 +105,7 @@ class LocalStore(private val settings: Settings) {
 
     // ---- Internals ----
 
-    private fun <T> readOrNull(key: String): T? =
+    private inline fun <reified T> readOrNull(key: String): T? =
         settings.getStringOrNull(key)?.let { runCatching { json.decodeFromString<T>(it) }.getOrNull() }
 
     private inline fun <reified T> readList(key: String): List<T> =

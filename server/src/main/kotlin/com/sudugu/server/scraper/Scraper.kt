@@ -111,6 +111,7 @@ class Scraper {
     private val userAgent = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(10))
+        .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
     private val cache = LinkedHashMap<String, String>(500, 0.75f, true)
     private val cacheLock = Any()

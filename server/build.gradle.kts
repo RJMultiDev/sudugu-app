@@ -35,12 +35,3 @@ dependencies {
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.junit)
 }
-
-tasks.named<JavaExec>("run") {
-    standardInput = System.`in`
-}
-
-// Re-declare plugin alias for clarity
-apply {
-    // Make sure we have the kotlin-jvm alias
-}

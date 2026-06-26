@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -25,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sudugu.app.ui.components.LoadingIndicator
-import com.sudugu.app.ui.nav.Routes
 import com.sudugu.app.viewmodel.SuduguViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +74,7 @@ fun ChapterListScreen(
                                 .fillMaxWidth()
                                 .clickable {
                                     val idx = chapters.indexOfFirst { it.id == ch.id }
-                                    nav.navigate(Routes.reader(bookId, bookTitle, idx))
+                                    nav.navigate(Reader(bookId, bookTitle, idx))
                                 }
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                         ) {

@@ -4,6 +4,7 @@ import com.sudugu.app.model.*
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngineFactory
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -22,7 +23,7 @@ import io.ktor.client.statement.bodyAsText
 class ServerApi(
     engineFactory: HttpClientEngineFactory<*>,
     private val baseUrl: String,
-) {
+) : SuduguApiContract {
     private val client: HttpClient = HttpClient(engineFactory) {
         expectSuccess = false
         install(ContentNegotiation) {
@@ -31,27 +32,35 @@ class ServerApi(
                 isLenient = true
             })
         }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 10_000
+        }
     }
 
-    suspend fun home(): HomeData = client.get("$baseUrl/api/home").body()
-    suspend fun categories(): List<Category> = client.get("$baseUrl/api/categories").body()
-    suspend fun category(slug: String, page: Int = 1): CategoryDetail =
+    override suspend fun home(): HomeData = client.get("$baseUrl/api/home").body()
+    override suspend fun categories(): List<Category> = client.get("$baseUrl/api/categories").body()
+    override suspend fun category(slug: String, page: Int): CategoryDetail =
         client.get("$baseUrl/api/category/$slug") { parameter("page", page) }.body()
-    suspend fun ranking(page: Int = 1): CategoryDetail =
+    override suspend fun ranking(page: Int): CategoryDetail =
         client.get("$baseUrl/api/ranking") { parameter("page", page) }.body()
-    suspend fun completed(page: Int = 1): CategoryDetail =
+    override suspend fun completed(page: Int): CategoryDetail =
         client.get("$baseUrl/api/completed") { parameter("page", page) }.body()
-    suspend fun latest(page: Int = 1): CategoryDetail =
+    override suspend fun latest(page: Int): CategoryDetail =
         client.get("$baseUrl/api/latest") { parameter("page", page) }.body()
-    suspend fun search(keyword: String): SearchResult =
-        client.get("$baseUrl/api/search") { parameter("keyword", keyword) }.body()
-    suspend fun novelDetail(id: String): NovelDetail = client.get("$baseUrl/api/novel/$id").body()
-    suspend fun chapter(bookId: String, chapterId: String): ChapterContent =
+    override suspend fun search(keyword: String): Pair<List<Novel>, String> {
+        val r: SearchResult = client.get("$baseUrl/api/search") { parameter("keyword", keyword) }.body()
+        return r.novels to r.keyword
+    }
+    override suspend fun novelDetail(id: String): NovelDetail = client.get("$baseUrl/api/novel/$id").body()
+    override suspend fun chapter(bookId: String, chapterId: String): ChapterContent =
         client.get("$baseUrl/api/chapter/$bookId/$chapterId").body()
-    suspend fun author(author: String): SearchResult =
-        client.get("$baseUrl/api/author") { parameter("tag", author) }.body()
+    override suspend fun authorNovels(author: String): Pair<List<Novel>, String> {
+        val r: SearchResult = client.get("$baseUrl/api/author") { parameter("tag", author) }.body()
+        return r.novels to r.keyword
+    }
 
-    fun close() = client.close()
+    override fun close() { client.close() }
 
     @kotlinx.serialization.Serializable
     data class SearchResult(val novels: List<Novel> = emptyList(), val keyword: String = "")

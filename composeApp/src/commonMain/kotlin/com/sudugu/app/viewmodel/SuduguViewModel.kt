@@ -1,14 +1,18 @@
 package com.sudugu.app.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.sudugu.app.data.SuduguApi
+import com.sudugu.app.data.SuduguApiContract
 import com.sudugu.app.model.*
 import com.sudugu.app.storage.LocalStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 data class HomeUiState(
     val loading: Boolean = false,
@@ -54,9 +58,18 @@ data class SearchUiState(
  * delegates network calls to [SuduguApi] and local storage to [LocalStore].
  */
 class SuduguViewModel(
-    private val api: SuduguApi,
+    private val api: SuduguApiContract,
     val store: LocalStore,
-) : ViewModel() {
+) : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext =
+        Dispatchers.Main + SupervisorJob()
+
+    fun onCleared() {
+        coroutineContext.cancel()
+        api.close()
+    }
+
 
     private val _home = MutableStateFlow(HomeUiState())
     val home: StateFlow<HomeUiState> = _home.asStateFlow()
@@ -90,7 +103,7 @@ class SuduguViewModel(
     fun loadHome() {
         if (_home.value.loading) return
         _home.value = _home.value.copy(loading = true, error = null)
-        viewModelScope.launch {
+        launch {
             _home.value = try {
                 HomeUiState(loading = false, data = api.home())
             } catch (e: Throwable) {
@@ -104,7 +117,7 @@ class SuduguViewModel(
     fun loadCategories() {
         if (_categories.value.loading) return
         _categories.value = _categories.value.copy(loading = true, error = null)
-        viewModelScope.launch {
+        launch {
             _categories.value = try {
                 CategoryListUiState(loading = false, categories = api.categories())
             } catch (e: Throwable) {
@@ -115,7 +128,7 @@ class SuduguViewModel(
 
     fun loadCategoryDetail(slug: String, page: Int = 1) {
         _categoryDetail.value = _categoryDetail.value.copy(loading = true, page = page, error = null)
-        viewModelScope.launch {
+        launch {
             _categoryDetail.value = try {
                 val d = api.category(slug, page)
                 ListUiState(loading = false, items = d.novels, page = d.page, totalPages = d.totalPages)
@@ -127,7 +140,7 @@ class SuduguViewModel(
 
     fun loadRanking(page: Int = 1) {
         _ranking.value = _ranking.value.copy(loading = true, page = page)
-        viewModelScope.launch {
+        launch {
             _ranking.value = try {
                 val d = api.ranking(page)
                 ListUiState(loading = false, items = d.novels, page = d.page, totalPages = d.totalPages)
@@ -139,7 +152,7 @@ class SuduguViewModel(
 
     fun loadCompleted(page: Int = 1) {
         _completed.value = _completed.value.copy(loading = true, page = page)
-        viewModelScope.launch {
+        launch {
             _completed.value = try {
                 val d = api.completed(page)
                 ListUiState(loading = false, items = d.novels, page = d.page, totalPages = d.totalPages)
@@ -151,7 +164,7 @@ class SuduguViewModel(
 
     fun loadLatest(page: Int = 1) {
         _latest.value = _latest.value.copy(loading = true, page = page)
-        viewModelScope.launch {
+        launch {
             _latest.value = try {
                 val d = api.latest(page)
                 ListUiState(loading = false, items = d.novels, page = d.page, totalPages = d.totalPages)
@@ -165,7 +178,7 @@ class SuduguViewModel(
 
     fun loadDetail(id: String) {
         _detail.value = _detail.value.copy(loading = true, error = null)
-        viewModelScope.launch {
+        launch {
             _detail.value = try {
                 DetailUiState(loading = false, data = api.novelDetail(id))
             } catch (e: Throwable) {
@@ -175,7 +188,7 @@ class SuduguViewModel(
     }
 
     fun toggleBookshelf(novel: Novel) {
-        viewModelScope.launch {
+        launch {
             if (store.isInBookshelf(novel.id)) {
                 store.removeFromBookshelf(novel.id)
             } else {
@@ -201,7 +214,7 @@ class SuduguViewModel(
 
     fun loadChapter(bookId: String, chapterId: String) {
         _chapter.value = _chapter.value.copy(loading = true, error = null)
-        viewModelScope.launch {
+        launch {
             _chapter.value = try {
                 val c = api.chapter(bookId, chapterId)
                 // Save progress
@@ -214,7 +227,7 @@ class SuduguViewModel(
     }
 
     fun saveScrollPosition(bookId: String, chapterId: String, chapterTitle: String, bookTitle: String, scrollY: Float) {
-        viewModelScope.launch {
+        launch {
             store.saveReadProgress(bookId, chapterId, chapterTitle, bookTitle, scrollY)
         }
     }
@@ -229,7 +242,7 @@ class SuduguViewModel(
         val kw = _search.value.keyword
         if (kw.isBlank()) return
         _search.value = _search.value.copy(loading = true, error = null)
-        viewModelScope.launch {
+        launch {
             _search.value = try {
                 val (results, _) = api.search(kw)
                 SearchUiState(keyword = kw, loading = false, results = results)
@@ -237,10 +250,5 @@ class SuduguViewModel(
                 SearchUiState(keyword = kw, loading = false, error = e.message ?: "搜索失败")
             }
         }
-    }
-
-    override fun onCleared() {
-        api.close()
-        super.onCleared()
     }
 }

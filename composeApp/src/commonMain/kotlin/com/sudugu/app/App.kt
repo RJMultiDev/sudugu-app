@@ -5,10 +5,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.sudugu.app.data.SuduguApi
-import com.sudugu.app.data.platformEngineFactory
+import com.sudugu.app.data.SuduguApiContract
+import com.sudugu.app.data.createApi
 import com.sudugu.app.storage.LocalStore
 import com.sudugu.app.storage.createSettings
 import com.sudugu.app.ui.nav.SuduguNavHost
@@ -34,7 +35,7 @@ fun SuduguApp(vm: SuduguViewModel) {
 fun rememberViewModel(): SuduguViewModel {
     val settings = remember { createSettings() }
     val store = remember(settings) { LocalStore(settings).also { it.loadAll() } }
-    val api = remember { SuduguApi(platformEngineFactory) }
+    val api: SuduguApiContract = remember { createApi() }
     val vm = remember { SuduguViewModel(api, store) }
     return vm
 }

@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,9 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sudugu.app.ui.components.NovelCard
-import com.sudugu.app.ui.nav.Routes
 import com.sudugu.app.viewmodel.SuduguViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +54,7 @@ fun BookshelfScreen(vm: SuduguViewModel, nav: NavHostController) {
                             status = book.status,
                             category = book.category,
                         ),
-                    ) { nav.navigate(Routes.novelDetail(book.id)) }
+                    ) { nav.navigate(NovelDetail(book.id)) }
                 }
             }
         }

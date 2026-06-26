@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +57,6 @@ import androidx.navigation.NavHostController
 import com.sudugu.app.model.ReaderFontSize
 import com.sudugu.app.ui.components.ErrorView
 import com.sudugu.app.ui.components.LoadingIndicator
-import com.sudugu.app.ui.nav.Routes
 import com.sudugu.app.ui.theme.AppColors
 import com.sudugu.app.viewmodel.SuduguViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -73,7 +84,7 @@ fun ReaderScreen(
     // store a small cache of "current chapter ids" via the chaptersCache
     // module, but for simplicity we use the loaded chapter and let prev/next
     // cycle the chapter id. Since this is the only reader screen entry point
-    // coming from `Routes.reader` with an *index*, we keep the index in state
+    // coming from `Reader` with an *index*, we keep the index in state
     // and rely on `loadChapter(bookId, chapterId)` using whatever id we pass.
     var currentIndex by remember { mutableStateOf(chapterIndex) }
     var currentChapterId by remember { mutableStateOf<String?>(null) }
@@ -188,7 +199,7 @@ fun ReaderScreen(
                                 Text(
                                     "目录",
                                     modifier = Modifier
-                                        .clickable { nav.navigate(Routes.chapterList(bookId, bookTitle)) }
+                                        .clickable { nav.navigate(ChapterList(bookId, bookTitle)) }
                                         .padding(12.dp),
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )

@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sudugu.app.ui.components.ErrorView
 import com.sudugu.app.ui.components.LoadingIndicator
-import com.sudugu.app.ui.nav.Routes
 import com.sudugu.app.viewmodel.SuduguViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +66,7 @@ fun CategoryScreen(vm: SuduguViewModel, nav: NavHostController) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { nav.navigate(Routes.categoryDetail(c.slug, c.name)) }
+                            .clickable { nav.navigate(CategoryDetail(c.slug, c.name)) }
                             .padding(12.dp),
                         contentAlignment = Alignment.Center,
                     ) {

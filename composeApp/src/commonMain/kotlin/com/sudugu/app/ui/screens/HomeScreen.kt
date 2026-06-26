@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,7 +45,6 @@ import androidx.navigation.NavHostController
 import com.sudugu.app.ui.components.ErrorView
 import com.sudugu.app.ui.components.LoadingIndicator
 import com.sudugu.app.ui.components.NovelCard
-import com.sudugu.app.ui.nav.Routes
 import com.sudugu.app.viewmodel.SuduguViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,8 +58,8 @@ fun HomeScreen(vm: SuduguViewModel, nav: NavHostController) {
             TopAppBar(
                 title = { Text("速读谷", fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { nav.navigate("search") }) {
-                        Icon(Icons.Default.Search, contentDescription = "搜索")
+                    IconButton(onClick = { nav.navigate(Search) }) {
+                        Icon(Icons.Filled.Search, contentDescription = "搜索")
                     }
                 },
             )
@@ -72,7 +83,7 @@ fun HomeScreen(vm: SuduguViewModel, nav: NavHostController) {
                         )
                     }
                     items(data.latestUpdates) { novel ->
-                        NovelCard(novel) { nav.navigate(Routes.novelDetail(novel.id)) }
+                        NovelCard(novel) { nav.navigate(NovelDetail(novel.id)) }
                     }
 
                     item {
@@ -85,7 +96,7 @@ fun HomeScreen(vm: SuduguViewModel, nav: NavHostController) {
                         )
                     }
                     items(data.rankings) { novel ->
-                        NovelCard(novel) { nav.navigate(Routes.novelDetail(novel.id)) }
+                        NovelCard(novel) { nav.navigate(NovelDetail(novel.id)) }
                     }
 
                     item {
@@ -98,7 +109,7 @@ fun HomeScreen(vm: SuduguViewModel, nav: NavHostController) {
                         )
                     }
                     items(data.completedNovels) { novel ->
-                        NovelCard(novel) { nav.navigate(Routes.novelDetail(novel.id)) }
+                        NovelCard(novel) { nav.navigate(NovelDetail(novel.id)) }
                     }
                 }
             }

@@ -1,17 +1,17 @@
 [versions]
 # Build
 agp = "8.7.3"
-kotlin = "2.1.10"
-ksp = "2.1.10-1.0.29"
+kotlin = "2.2.21"
+ksp = "2.2.21-2.0.5"
 
 # Compose Multiplatform
 composeBom = "2024.12.01"
 composeMultiplatform = "1.7.3"
 androidxActivityCompose = "1.9.3"
-androidxLifecycle = "2.8.7"
+androidxLifecycle = "2.8.4"
 
 # Navigation
-navCompose = "2.8.5"
+navCompose = "2.9.2"
 
 # Coroutines & Serialization
 coroutines = "1.10.1"
@@ -120,7 +120,7 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 # Test
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
-junit = { module = "junit:junit:4.13.2" }
+junit = { module = "junit:junit", version = "4.13.2" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -128,7 +128,6 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinCocoapods = { id = "org.jetbrains.kotlin.plugin.cocoapods", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }

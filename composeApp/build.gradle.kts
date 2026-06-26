@@ -1,55 +1,34 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.kotlinCocoapods)
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
+    jvmToolchain(17)
+
+    androidTarget()
 
     iosX64()
     iosArm64()
     iosSimulatorArm64()
 
-    cocoapods {
-        summary = "速读谷 - 速读谷小说阅读 App"
-        homepage = "https://github.com/rjmultidev/sudugu-app"
-        version = "1.0.0"
-        ios.deploymentTarget = "15.0"
-        podfile = project.file("../iosApp/Podfile")
-        framework {
-            baseName = "composeApp"
-            isStatic = true
-        }
-    }
+    // Note: We deliberately do NOT use the Kotlin Cocoapods plugin here because
+    // its Gradle Plugin Portal marker is not published separately. iOS is
+    // integrated via SwiftPM in the Xcode side. See iosApp/README.md.
 
-    jvm("desktop") {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
+    jvm("desktop")
 
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-        output {
-            jsDirectory = "build/dist/js/productionExecutable"
-        }
+        browser()
     }
+
+    // The web/wasm distribution directory defaults to:
+    //   composeApp/build/dist/js/productionExecutable/
+    // which is what we want for static deployment.
 
     sourceSets {
         val commonMain by getting {
@@ -57,14 +36,9 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
-                implementation(compose.materialIcons)
+                implementation("org.jetbrains.compose.material:material-icons-extended:${libs.versions.composeMultiplatform.get()}")
                 implementation(compose.ui)
-                implementation(compose.uiGraphics)
-                implementation(compose.uiToolingPreview)
-                implementation(libs.androidx.lifecycle.viewmodel)
-                implementation(libs.androidx.lifecycle.runtime)
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(libs.androidx.lifecycle.runtime.compose)
+                implementation("org.jetbrains.compose.ui:ui-graphics:${libs.versions.composeMultiplatform.get()}")
                 implementation(libs.nav.compose)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
@@ -73,8 +47,6 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.ktor.client.logging)
-                implementation(libs.jsoup)
                 implementation(libs.multiplatform.settings)
                 implementation(libs.multiplatform.settings.coroutines)
                 implementation(libs.coil.compose)
@@ -92,18 +64,21 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.activity.compose)
+                implementation(libs.androidx.lifecycle.viewmodel)
+                implementation(libs.androidx.lifecycle.runtime)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+                implementation(libs.androidx.lifecycle.runtime.compose)
+                implementation(compose.uiTooling)
+                implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(libs.ktor.client.okhttp)
-            }
-        }
-        val iosMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.darwin)
             }
         }
         val desktopMain by getting {
             dependencies {
                 implementation(libs.compose.desktop)
+                implementation(compose.uiTooling)
+                implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)
             }
@@ -111,6 +86,17 @@ kotlin {
         val wasmJsMain by getting {
             dependencies {
                 implementation(libs.ktor.client.js)
+            }
+        }
+
+        // iOS — use individual targets so we can attach darwin engine to all.
+        listOf(
+            iosX64Main,
+            iosArm64Main,
+            iosSimulatorArm64Main,
+        ).forEach { sourceSet ->
+            sourceSet.dependencies {
+                implementation(libs.ktor.client.darwin)
             }
         }
     }
@@ -145,9 +131,4 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].kotlin.srcDirs("src/androidMain/kotlin")
-}
-
-composeMultiplatform {
-    // Compose for Web/WASM is enabled by including the wasmJs target above
-    // Compose for Android & iOS & Desktop come from composeMultiplatform plugin
 }

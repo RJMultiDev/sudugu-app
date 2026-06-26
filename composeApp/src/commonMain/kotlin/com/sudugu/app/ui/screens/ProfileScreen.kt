@@ -1,5 +1,17 @@
 package com.sudugu.app.ui.screens
 
+import com.sudugu.app.ui.nav.Bookshelf
+import com.sudugu.app.ui.nav.Category
+import com.sudugu.app.ui.nav.CategoryDetail
+import com.sudugu.app.ui.nav.ChapterList
+import com.sudugu.app.ui.nav.Home
+import com.sudugu.app.ui.nav.NovelDetail
+import com.sudugu.app.ui.nav.Profile
+import com.sudugu.app.ui.nav.Ranking
+import com.sudugu.app.ui.nav.Reader
+import com.sudugu.app.ui.nav.ReadHistory
+import com.sudugu.app.ui.nav.Search
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,7 +62,7 @@ fun ProfileScreen(vm: SuduguViewModel, nav: NavHostController) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    if (theme == ThemeMode.DARK) Icons.Default.Brightness7 else Icons.Default.Brightness4,
+                    if (theme == ThemeMode.DARK) Icons.Filled.Brightness7 else Icons.Filled.Brightness4,
                     contentDescription = "切换主题",
                 )
                 Spacer(Modifier.height(0.dp).padding(start = 12.dp))
@@ -60,22 +72,22 @@ fun ProfileScreen(vm: SuduguViewModel, nav: NavHostController) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { nav.navigate("ranking") }
+                    .clickable { nav.navigate(Ranking) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Default.Leaderboard, contentDescription = "排行榜")
+                Icon(Icons.Filled.Leaderboard, contentDescription = "排行榜")
                 Text("排行榜", modifier = Modifier.padding(start = 12.dp))
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { nav.navigate("read_history") }
+                    .clickable { nav.navigate(ReadHistory) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Default.History, contentDescription = "阅读记录")
+                Icon(Icons.Filled.History, contentDescription = "阅读记录")
                 Text("阅读记录", modifier = Modifier.padding(start = 12.dp))
             }
         }
