@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Allow only one concurrent build; cancel in-progress runs on new push to main
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_HOME: /opt/jdk/jdk-17.0.2
+  ANDROID_HOME: /opt/android-sdk
+  GRADLE_OPTS: "-Xmx4g -XX:+UseParallelGC"
+
+jobs:
+  # ─── Unit + Integration Tests ──────────────────────────────────────
+  test:
+    name: Test (Desktop JVM + Server)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run unit tests (composeApp Desktop)
+        run: ./gradlew :composeApp:desktopTest --stacktrace
+
+      - name: Run server tests (live upstream)
+        run: ./gradlew :server:test --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            composeApp/build/reports/tests/desktopTest
+            server/build/reports/tests/test
+          if-no-files-found: warn
+
+  # ─── Compile every common-main target (sanity gate) ───────────────
+  compile:
+    name: Compile (Common Metadata)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle/libs.versions.toml') }}
+      - name: Compile common metadata
+        run: ./gradlew :composeApp:compileCommonMainKotlinMetadata --stacktrace
+
+  # ─── Android APK (debug) ───────────────────────────────────────────
+  android:
+    name: Android APK (debug)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: compile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle/libs.versions.toml') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Enable KVM (faster x86_64 emulator, not strictly required here)
+        run: |
+          echo "KERNEL==\"kvm\", GROUP+=\"$(stat -c %g /dev/kvm)\" " | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null || true
+
+      - name: Build Android debug APK
+        env:
+          ANDROID_SDK_ROOT: ${{ secrets.ANDROID_SDK_ROOT }}
+        run: |
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+          ./gradlew :composeApp:assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-debug
+          path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
+          if-no-files-found: error
+
+  # ─── Server (Ktor) build distribution ──────────────────────────────
+  server:
+    name: Server Build (Ktor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle/libs.versions.toml') }}
+      - name: Build server distribution
+        run: ./gradlew :server:installDist --stacktrace
+      - name: Smoke test (start + curl /health)
+        run: |
+          ./server/build/install/server/bin/server &
+          SERVER_PID=$!
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            sleep 1
+            if curl -sf http://localhost:3001/health > /dev/null; then
+              echo "Server up"
+              curl -s http://localhost:3001/health
+              break
+            fi
+          done
+          kill $SERVER_PID || true
+      - name: Upload server dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-dist
+          path: server/build/install/server/
+          if-no-files-found: error
+
+  # ─── Web (Kotlin/Wasm) bundle ──────────────────────────────────────
+  web:
+    name: Web (Kotlin/Wasm) Distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: compile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle/libs.versions.toml') }}
+      - name: Build Wasm distribution
+        run: ./gradlew :composeApp:wasmJsBrowserDistribution --stacktrace
+      - name: Upload Wasm dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-wasm-dist
+          path: composeApp/build/dist/js/productionExecutable/
+          if-no-files-found: error
+
+  # ─── Summary: only after all jobs pass ──────────────────────────────
+  done:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [android, server, web]
+    if: success()
+    steps:
+      - name: All OK
+        run: |
+          echo "✅ Android APK, Server, Web — all built successfully"
+          echo "📥 Download artifacts from this run"
