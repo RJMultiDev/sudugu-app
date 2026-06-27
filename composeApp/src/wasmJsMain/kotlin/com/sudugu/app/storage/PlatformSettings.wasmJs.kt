@@ -4,8 +4,8 @@ import com.russhwolf.settings.Settings
 import com.russhwolf.settings.StorageSettings
 import kotlinx.browser.localStorage
 
-private fun nowMs(): Long = js("Date.now()").toLong()
+private val nowMsValue: Long = js("Date.now()").toLong()
 
 actual fun createSettings(): Settings = StorageSettings(localStorage)
 
-actual fun currentTimeMillis(): Long = nowMs()
+actual fun currentTimeMillis(): Long = nowMsValue
